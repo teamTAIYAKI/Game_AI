@@ -1,8 +1,8 @@
 /*
- * Cpp_game_0001.cpp
+ * Cpp_game_0003.cpp
  * Yusuke_Kato
  * 2016.5.21
- * 2016.5.24
+ * 2016.5.25
  */
  
 /*
@@ -12,7 +12,10 @@
 /*
  * player,enemy,両方自動
  * 
+ * ・追いかけるのは簡単
  * ・逃げるにはどうするか
+ * →一応できたけど、まだまだだ
+ * 
  */
  
 #include <GL/glut>
@@ -21,10 +24,17 @@
 #include <time>
 using namespace std;
 
-static GLint px = -40,py = -40;//player位置
-static GLint nx = 40, ny = 40;//enemy位置
+#define Y_MAX 40
+#define Y_MIN -40
+#define X_MAX 40
+#define X_MIN -40
+#define STEP 8//移動の間隔、マス目
+#define ENEMY_NONE 24//相手とこの距離離れていたら敵は気にしない
 
-static GLint flag = 0;
+static GLint px = X_MIN,py = Y_MIN;//player位置
+static GLint nx = X_MAX,ny = Y_MAX;//enemy位置
+
+static GLint flag = 0;//自分と相手が交互に動くため
 
 /* 点を作る。要素は（x座標、y座標、大きさ） */
 void Point(int x,int y,float size){
@@ -34,54 +44,83 @@ void Point(int x,int y,float size){
 	glEnd();
 }
 
+/* 自分の動き（自動） */
 void player_motion(void)
 {	
-	int dy,dx;
-	int w_dy, w_dx;
-	int copy_py, copy_px;
+	int dy,dx;//自分と相手の距離の差(正と負を考える)(絶対値fabs)
+	int w_dy_p,w_dy_m,w_dx_p,w_dx_m;//壁からの距離
+	int copy_py, copy_px;//移動する前の座標を保存しておく
+	int random;//乱数生成
 	
 	if(flag == 0 || flag == 1){
-		copy_py = py;
-		copy_px - px;
+		copy_py = py;//結果そこから動かなかったということを判断するため
+		copy_px = px;
 		/* playerとenemyの距離 */
-		if(py > ny) dy = py - ny;
-		else if(py < ny) dy = ny - py;
-		if(px > nx) dx = px - nx;
-		else if(px < nx) dx = nx - px;
+		dy = py - ny;//位置によって正負が変わる
+		dx = px - nx;//絶対値とったりしても使う
 		/* playerと壁の距離 */
-		if(py >= 0) w_dy = 40 - py;
-		else if(py < 0) w_dy = py + 40;
-		if(px >= 0) w_dx = 40 - px;
-		else if(px < 0) w_dx - px + 40;
-		/* 動き */
-		if((dy >= 8 && dy <= 16) && (dx >= 8 && dx <= 16)){
-			if(py > ny){
-				if(py < 40) py += 8;
-			} else if(py < ny){
-				if(py > -40) py -= 8;
-			}
-			if(px > nx){
-				if(px < 40) px += 8;
-			} else if(px < nx){
-				if(px > -40) px -= 8;
-			}
-			if(copy_py == py && copy_px == px){
-				if(w_dy == 0){
-					if(py > 0) py -= 8;
-					else if(py < 0) py += 8;
-				}
-				if(w_dx == 0){
-					if(px > 0) px -= 8;
-					else if(px < 0) px += 8;
-				}
-			}
+		//w:wall,p:plus,m:minus
+		w_dy_p = Y_MAX - py;//上からの距離p:plus,m:minus
+		w_dy_m = py - Y_MIN;//下から
+		w_dx_p = X_MAX - px;//右から
+		w_dx_m = px - X_MIN;//左から
+		/********** 動き **********/
+		/**************************/
+		/* 敵が近くにはいないとき、まず中心へ向かう */
+		if(fabs(dy) >= ENEMY_NONE && fabs(dx) >= ENEMY_NONE){
+			if(py >= 0) py -= STEP;
+			else if(py < 0) py += STEP;
+			if(px >= 0) px -= STEP;
+			else if(px < 0) px += STEP;
 		}
+		/* 敵が近いときは広いほうへ逃げる */
 		else {
-			if(py > 0) py -= 8;
-			else if(py < 0) py += 8;
-			if(py > 0) px -= 8;
-			else if(px < 0) px += 8;
+			if(py == ny){//条件１
+				if(w_dy_p >= w_dy_m)py += STEP;
+				else if(w_dy_p < w_dy_m)py -= STEP;
+			}else if(px == nx){//条件２
+				if(w_dx_p >= w_dx_m) px += STEP;
+				else if(w_dx_p < w_dx_m) px -= STEP;
+			}else if(py > ny && px > nx){//条件３
+				if(w_dy_m >= w_dx_m){
+					py -= STEP;
+					px += STEP;
+				}
+				else if(w_dy_m < w_dx_m){
+					py += STEP;
+					px -= STEP;
+				}
+			}else if(py > ny && px < nx){//条件４
+				if(w_dy_m >= w_dx_p){
+					py -= STEP;
+					px -= STEP;
+				}
+				else if(w_dy_m < w_dx_p){
+					py += STEP;
+					px += STEP;
+				}
+			}else if(py < ny && px > nx){//条件５
+				if(w_dy_p >= w_dx_m){
+					py += STEP;
+					px += STEP;
+				}
+				else if(w_dy_p < w_dx_m){
+					py -= STEP;
+					px -= STEP;
+				}
+			}else if(py < ny && px < nx){//条件６
+				if(w_dy_p >= w_dx_p){
+					py += STEP;
+					px -= STEP;
+				}
+				else if(w_dy_p < w_dx_p){
+					py -= STEP;
+					px += STEP;
+				}
+			}
 		}
+		/**************************/
+		/**************************/
 		Sleep(1000);
 		if(flag == 0) flag = 1;
 		else if(flag == 1) flag = 2;
@@ -92,10 +131,10 @@ void player_motion(void)
 void enemy_motion(void)
 {
 	if(flag == 2){
-		if(ny > py) ny -= 8;
-		else if(ny < py) ny += 8;
-		if(nx > px) nx -= 8;
-		else if(nx < px) nx += 8;
+		if(ny > py) ny -= STEP;
+		else if(ny < py) ny += STEP;
+		if(nx > px) nx -= STEP;
+		else if(nx < px) nx += STEP;
 		if(ny == py && nx == px){
 			cout << "\n\n ......END...... \n\n";
 			exit(0);
@@ -112,7 +151,7 @@ void display(void)
 	glClear(GL_COLOR_BUFFER_BIT);
 	
 	/* field作成 : -40～40に間隔8ずつ */
-	for(j = -40; j <= 40; j += 8){
+	for(j = -40; j <= 40; j += STEP){
 		glColor4f(0.0f, 0.0f, 0.0f, 0.0f);
 		glBegin(GL_LINES);
 		glVertex2d(j,40);//横
@@ -129,8 +168,8 @@ void display(void)
 		glVertex2d(j,-40);
 		glEnd();
 	}//for_j
-	for(j = -40; j <= 40; j += 8){
-		for(i = -40; i <= 40; i += 8){
+	for(j = -40; j <= 40; j += STEP){
+		for(i = -40; i <= 40; i += STEP){
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 			Point(j,i,20);
 		}//for_i
