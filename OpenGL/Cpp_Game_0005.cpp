@@ -10,6 +10,8 @@
  */
  
 /*
+ * テレポート作った
+ *
  * 障害物をつくる
  * これがgameAIと言えるかどうかはともかく
  * 思ったよりうまくいっている気がする
@@ -45,10 +47,18 @@ using namespace std;
 #define STEP 8//移動の間隔、マス目
 #define ENEMY_NONE 24//相手とこの距離離れていたら敵は気にしない
 /* テレポートポイント */
-#define TERE_Y_1 16
+#define TERE_Y_1 8
 #define TERE_X_1 24
-#define TERE_Y_2 -40
-#define TERE_X_2 -16
+#define TERE_Y_2 -24
+#define TERE_X_2 -24
+#define TERE_Y_3 24
+#define TERE_X_3 -16
+#define TERE_Y_4 -16
+#define TERE_X_4 16
+#define TERE_Y_5 24
+#define TERE_X_5 0
+#define TERE_Y_6 -24
+#define TERE_X_6 0
 
 static GLint px = X_MIN,py = Y_MIN;//player位置
 static GLint nx = X_MAX,ny = Y_MAX;//enemy位置
@@ -71,7 +81,7 @@ void enemy_motion(void)
 	int copy_py, copy_px;//移動する前の座標を保存しておく
 	int random;//乱数生成
 	
-	if(flag == 0){
+	if(flag == 0 || flag == 1){
 		copy_py = py;//結果そこから動かなかったということを判断するため
 		copy_px = px;
 		/* playerとenemyの距離 */
@@ -148,6 +158,43 @@ void enemy_motion(void)
 				px = copy_px;
 			}
 		}
+		if(py == copy_py && px == copy_px){
+			if(py >= 0 && px >= 0){
+				if(py >= ny) py += STEP;
+				else if(py < ny) px += STEP;
+			}else if(py >= 0 && px < 0){
+				if(py >= ny) py += STEP;
+				else if(py < ny) px -= STEP;
+			}else if(py < 0 && px < 0){
+				if(py > ny) px -= STEP;
+				else if(py <= ny) py -= STEP;
+			}else if(py < 0 && px >= 0){
+				if(py > ny) px += STEP;
+				else if(py <= ny) py -= STEP;
+			}
+		}
+		/* テレポート */
+			if(py == TERE_Y_1 && px == TERE_X_1){
+				py = TERE_Y_2;
+				px = TERE_X_2;
+			}else if(py == TERE_Y_2 && px == TERE_X_2){
+				py = TERE_Y_1;
+				px = TERE_X_1;
+			}
+			if(py == TERE_Y_3 && px == TERE_X_3){
+				py = TERE_Y_4;
+				px = TERE_X_4;
+			}else if(py == TERE_Y_4 && px == TERE_X_4){
+				py = TERE_Y_3;
+				px = TERE_X_3;
+			}
+			if(py == TERE_Y_5 && px == TERE_X_5){
+				py = TERE_Y_6;
+				px = TERE_X_6;
+			}else if(py == TERE_Y_6 && px == TERE_X_6){
+				py = TERE_Y_5;
+				px = TERE_X_5;
+			}
 		/**************************/
 		/**************************/
 		if(py == ny && px == nx){
@@ -156,6 +203,7 @@ void enemy_motion(void)
 		}
 		Sleep(1000);
 		if(flag == 0) flag = 1;
+		else if(flag == 1) flag = 2;
 	}//if_flag
 }
 
@@ -216,6 +264,12 @@ void display(void)
 	glColor4f(1.0f,0.0f,0.0f,0.0f);
 	Point(TERE_X_1,TERE_Y_1,20);
 	Point(TERE_X_2,TERE_Y_2,20);
+	glColor4f(1.0f,1.0f,0.0f,0.0f);
+	Point(TERE_X_3,TERE_Y_3,20);
+	Point(TERE_X_4,TERE_Y_4,20);
+	glColor4f(0.0f,1.0f,0.0f,0.0f);
+	Point(TERE_X_5,TERE_Y_5,20);
+	Point(TERE_X_6,TERE_Y_6,20);
 	/* player描写 */
 	glColor4f(0.2f, 0.6f, 0.3f, 0.2f);
 	Point(px,py,15);//player
@@ -245,7 +299,7 @@ void keyboard(unsigned char key ,int x, int y)
 {
 	int copy_ny,copy_nx;
 	
-	if(flag == 1){
+	if(flag == 2){
 		copy_ny = ny;
 		copy_nx = nx;
 			if( key == 'w'){
@@ -296,6 +350,23 @@ void keyboard(unsigned char key ,int x, int y)
 			if(ny == TERE_Y_1 && nx == TERE_X_1){
 				ny = TERE_Y_2;
 				nx = TERE_X_2;
+			}else if(ny == TERE_Y_2 && nx == TERE_X_2){
+				ny = TERE_Y_1;
+				nx = TERE_X_1;
+			}
+			if(ny == TERE_Y_3 && nx == TERE_X_3){
+				ny = TERE_Y_4;
+				nx = TERE_X_4;
+			}else if(ny == TERE_Y_4 && nx == TERE_X_4){
+				ny = TERE_Y_3;
+				nx = TERE_X_3;
+			}
+			if(ny == TERE_Y_5 && nx == TERE_X_5){
+				ny = TERE_Y_6;
+				nx = TERE_X_6;
+			}else if(ny == TERE_Y_6 && nx == TERE_X_6){
+				ny = TERE_Y_5;
+				nx = TERE_X_5;
 			}
 			/* 入れないところに行ったら戻す */
 			if((ny==8&&nx==0)||(ny==0&&(nx>=-8&&nx<=8))||(ny==-8&&nx==0)){
