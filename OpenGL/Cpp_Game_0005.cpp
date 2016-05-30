@@ -47,18 +47,26 @@ using namespace std;
 #define STEP 8//移動の間隔、マス目
 #define ENEMY_NONE 24//相手とこの距離離れていたら敵は気にしない
 /* テレポートポイント */
-#define TERE_Y_1 8
+#define TERE_Y_1 8//赤
 #define TERE_X_1 24
 #define TERE_Y_2 -24
 #define TERE_X_2 -24
-#define TERE_Y_3 24
+#define TERE_Y_3 24//黄色
 #define TERE_X_3 -16
 #define TERE_Y_4 -16
 #define TERE_X_4 16
-#define TERE_Y_5 24
+#define TERE_Y_5 24//緑
 #define TERE_X_5 0
 #define TERE_Y_6 -24
 #define TERE_X_6 0
+#define TERE_Y_7 40
+#define TERE_X_7 -40
+#define TERE_Y_8 -40
+#define TERE_X_8 40
+#define TERE_Y_9 32
+#define TERE_X_9 40
+#define TERE_Y_10 -32
+#define TERE_X_10 -40
 
 static GLint px = X_MIN,py = Y_MIN;//player位置
 static GLint nx = X_MAX,ny = Y_MAX;//enemy位置
@@ -270,6 +278,12 @@ void display(void)
 	glColor4f(0.0f,1.0f,0.0f,0.0f);
 	Point(TERE_X_5,TERE_Y_5,20);
 	Point(TERE_X_6,TERE_Y_6,20);
+	glColor4f(0.0f,0.0f,1.0f,0.0f);
+	Point(TERE_X_7,TERE_Y_7,20);
+	Point(TERE_X_8,TERE_Y_8,20);
+	glColor4f(0.0f,0.0f,0.0f,1.0f);
+	Point(TERE_X_9,TERE_Y_9,20);
+	Point(TERE_X_10,TERE_Y_10,20);
 	/* player描写 */
 	glColor4f(0.2f, 0.6f, 0.3f, 0.2f);
 	Point(px,py,15);//player
@@ -367,6 +381,20 @@ void keyboard(unsigned char key ,int x, int y)
 			}else if(ny == TERE_Y_6 && nx == TERE_X_6){
 				ny = TERE_Y_5;
 				nx = TERE_X_5;
+			}
+			if(ny == TERE_Y_7 && nx == TERE_X_7){
+				ny = TERE_Y_8;
+				nx = TERE_X_8;
+			}else if(ny == TERE_Y_8 && nx == TERE_X_8){
+				ny = TERE_Y_7;
+				nx = TERE_X_7;
+			}
+			if(ny == TERE_Y_9 && nx == TERE_X_9){
+				ny = TERE_Y_10;
+				nx = TERE_X_10;
+			}else if(ny == TERE_Y_10 && nx == TERE_X_10){
+				ny = TERE_Y_9;
+				nx = TERE_X_9;
 			}
 			/* 入れないところに行ったら戻す */
 			if((ny==8&&nx==0)||(ny==0&&(nx>=-8&&nx<=8))||(ny==-8&&nx==0)){
